@@ -76,7 +76,7 @@ tried to follow her, but she erased him from her life with a wave of her hand.
 “No, please,” she said to him. “Forget it.”
 
 I chose this passage because (1) it was filled with sensous description of market life in a turn of century town in Latin America, (2) It had an aboslute surprise at the end (3) the description of the immediate disenchantment was so 
-  - 
+ 
 **Models and Tools**
 
 
