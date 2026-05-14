@@ -4,6 +4,9 @@ I loved reading the modern Spanish classic, "Love in the time of Cholera" by Gab
 across all 12 layers, maximum discriminability at layer 9, and token-level evidence that Grossman's translation is characterized by physical/sensory vocabulary while LLM translations favor abstract and explanatory word choices. 
 
 **Approach**
+  - Model and tools
+  - Translations used
+  - Why this passage
 **Models and Tools**
 
 
