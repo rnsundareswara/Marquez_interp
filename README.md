@@ -5,7 +5,8 @@ across all 12 layers, maximum discriminability at layer 9, and token-level evide
 
 **Approach**
   - Here is the original Spanish prose, followed by the official Edith Grossman's translation.
-    Original Prose: _Se sumergió en la algarabía caliente de los limpiabotas y los vendedores de
+
+*_Se sumergió en la algarabía caliente de los limpiabotas y los vendedores de
 pájaros, de los libreros de lance y los curanderos y las pregoneras de dulces que
 anunciaban a gritos por encima de la bulla las cocadas de piña para las niñas, las de coco
 para los locos, las de panela para Micaela. Pero ella fue indiferente al estruendo, 
@@ -40,7 +41,7 @@ había podido incubar durante tanto tiempo y con tanta sevicia semejante quimera
 corazón. Apenas alcanzó a pensar: “¡Dios mío, pobre hombre!”. Florentino Ariza sonrió,
 trató de decir algo, trató de seguirla, pero ella lo borró de su vida con un gesto de la
 mano.
--No, por favor -le dijo-. Olvídelo. _
+-No, por favor -le dijo-. Olvídelo. _*
 
 Edith Grossman's translation:
 She sank into the hot clamor of the shoeshine boys and the bird sellers, the hawkers of
