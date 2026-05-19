@@ -101,7 +101,7 @@ projection values. Here $n = 15$.
 
 Grossman's translation with words colored by their projection onto 
 the discriminating axis between Grossman and Gemini at layer 9:
-[Grossman vs Gemini](https://htmlpreview.github.io/?https://github.com/rnsundareswara/marquez-interp/blob/main/results/colored_passage_human_vs_gemini_L9.html) — green words are distinctively Grossman, red words are distinctively Gemini
+[Grossman vs Gemini](https://htmlpreview.github.io/?https://github.com/rnsundareswara/marquez-interp/blob/main/results/colored_passage_human_gemini_L9.html) — green words are distinctively Grossman, red words are distinctively Gemini
 
 
 ### Human vs Claude
@@ -123,7 +123,7 @@ the discriminating axis between Grossman and Gemini at layer 9:
 
 Grossman's translation with words colored by their projection onto 
 the discriminating axis between Grossman and Claude at layer 9:
-[Grossman vs Claude](https://htmlpreview.github.io/?https://github.com/rnsundareswara/marquez-interp/blob/main/results/colored_passage_human_vs_claude_L9.html) — green words are distinctively Grossman, red words are distinctively Claude
+[Grossman vs Claude](https://htmlpreview.github.io/?https://github.com/rnsundareswara/marquez-interp/blob/main/results/colored_passage_human_claude_L9.html) — green words are distinctively Grossman, red words are distinctively Claude
 
 
 
@@ -145,8 +145,7 @@ the discriminating axis between Grossman and Claude at layer 9:
 ---
 And for completeness, Gemini's translation with words colored by their projection onto 
 the discriminating axis between Gemini and Claude at layer 9:
-[Gemini vs Claude](https://htmlpreview.github.io/?https://github.com/rnsundareswara/marquez-interp/blob/main/results/colored_passage_gemini_vs_claude_L9.html) — green words are distinctively Gemini, red words are distinctively Claude
-
+[Gemini vs Claude](https://htmlpreview.github.io/?https://github.com/rnsundareswara/marquez-interp/blob/main/results/colored_passage_gemini_claude_L9.html) — green words are distinctively Gemini, red words are distinctively Claude
 
 
 
