@@ -10,7 +10,7 @@ Linked below, first is the original Spanish passage, followed by Grossman's Engl
 - [Gemini](passages.md#gemini-translation)
 - [Claude](passages.md#claude-translation) 
   
-I chose this passage originally not because it represented a tricky translation for a human expert or for an LLM but because it was a beautiful piece of prose characterised by sensous description of market life in a turn-of-the-century town in Latin America.  It has a surpise ending describing the ephermeral nature of human passions and it also is one of the most crucial turning points in the book.  
+I chose this passage originally not because it represented a tricky translation for a human expert or for an LLM but because it was a beautiful piece of prose characterised by sensuous description of market life in a turn-of-the-century town in Latin America.  It has a surprise ending describing the ephemeral nature of human passions and it also is one of the most crucial turning points in the book.  
 
 
 ## A Note on Scope
@@ -22,7 +22,7 @@ about LLM translation style in general. Validating these findings
 would require replicating the analysis across many more passages.
  
 **Analysis**\
-Part 1: 
+**Part 1**: 
 Pairwise cosine similarity of activations across all layers
 
 $$\text{cos}(\mathbf{v}_A, \mathbf{v}_B) = \frac{\mathbf{v}_A \cdot \mathbf{v}_B}{\|\mathbf{v}_A\| \|\mathbf{v}_B\|}$$
@@ -33,7 +33,7 @@ $$\text{cos}(\mathbf{v}_A, \mathbf{v}_B) = \frac{\mathbf{v}_A \cdot \mathbf{v}_B
   Figure 1 shows that overall all three translations when compared to each other have very similar activations across mostly all layers (cosine similarity > 0.99).  However, there is a consistent difference across all layers which stands out.  Claude and Gemini are more similar to each other than Claude is to Grossman or Gemini is to Grossman.  The largest difference happening in layer 9.  Further analysis (parts 3 and 4) breaks down which words in layer 9 had the highest activation and were distinctively human (or Claude or Gemini).  The next couple of analyses breaks this down further to understand what is responsible for the difference.
 
 
-****Part 2: Discriminating axis projection at layer 9
+**Part 2**: Discriminating axis projection at layer 9
 Figure 2 shows the amount of overlap in the token projections between each pair (Human <-> Claude, Human <-> Gemini, Gemini <-> Claude).  
 
 The discriminating axis was computed by:
@@ -70,7 +70,7 @@ The Kolmogorov-Smirnov statistic is a non-parametric test between two distributi
 | Human ↔ Claude  | 0.534   | 0.526   |
 | Gemini ↔ Claude | 0.449   | 0.599   |
 
-*Table 1: An overview of the KS stat and overlap coefficients for the three pair comparisions.  The two measures trend in the same direction (i.e Grossman's (human) translation being slightly different from each LLM's than the LLMs are to each other):  KS stat measures indicate that Gemini and Claude are more similar to each other (smallest differece) than Grossman's.  The ooverlap coefficient indicates that Gemini and Claude's projections overlap more than Grossman's does when compared with Claude's or Gemini's.*
+*Table 1: An overview of the KS stat and overlap coefficients for the three pair comparisions.  The two measures trend in the same direction (i.e Grossman's (human) translation being slightly different from each LLM's than the LLMs are to each other):  KS stat measures indicate that Gemini and Claude are more similar to each other (smallest differece) than Grossman's.  The overlap coefficient indicates that Gemini and Claude's projections overlap more than Grossman's does when compared with Claude's or Gemini's.*
 
 Next, we examine, what word choices distinguish Grossman's translations compared to Gemini and Claude's at layer 9's most discriminating axis.
 
@@ -158,15 +158,28 @@ The cosine similarity ordering — the consistent ranking (Gemini↔Claude most 
 
 
 
-****Part 2: Token-level NLL / perplexity
-Eqn here both for whole-text ppl and mean nll.
+**Part 3**: Token-level NLL / perplexity
+
+$$\text{NLL}_i = -\log P(w_i \mid w_1, \ldots, w_{i-1})$$
+
+The mean NLL is averaged over all tokens in the passage:
+
+$$\overline{\text{NLL}} = \frac{1}{N} \sum_{i=1}^{N} \text{NLL}_i$$
+
+Whole-text perplexity is the exponent of the mean NLL:
+
+$$\text{PPL} = \exp\left(\overline{\text{NLL}}\right) = \exp\left(\frac{1}{N} \sum_{i=1}^{N} \text{NLL}_i\right)$$
+
+A lower perplexity indicates GPT-2 finds the passage more predictable. 
+Higher perplexity indicates the model is more surprised by the word choices.
+
 
 | Translation     | Whole-text PPL | Mean NLL |
 |-----------------|---------------|----------|
 | Grossman (Human)| 38.6          | 3.65     |
 | Gemini          | 44.4          | 3.79     |
 | Claude          | 45.3          | 3.81     |
-[explanation of what the figure shows and what it means]
+
 The whole text perplexity indicates how much the model is "surprised" by the entire passage.  Here, surprisingly, we see that GPT-2 is less surprised by Grossman's translation than Gemini's or Claude's.  I thought that this was quite an interesting result and not what I first expected.  But then, one reason for this result could be that Grossman's (English) language could be quite natural (and in-distribution) given that he knows the overall style of the book in Spanish.  but Claude's and Gemini's are a bit surprising - perhaps a bit out of context as the LLM translated it without knowing the overall style / context of the book ...?  It's something I am still thinking about.
 
 
