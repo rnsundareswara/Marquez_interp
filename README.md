@@ -25,7 +25,7 @@ would require replicating the analysis across many more passages.
 Part 1: 
 Pairwise cosine similarity of activations across all layers
 
-$$\text{cos\_sim}(\mathbf{v}_A, \mathbf{v}_B) = \frac{\mathbf{v}_A \cdot \mathbf{v}_B}{\|\mathbf{v}_A\| \|\mathbf{v}_B\|}$$
+$$\text{cos}(\mathbf{v}_A, \mathbf{v}_B) = \frac{\mathbf{v}_A \cdot \mathbf{v}_B}{\|\mathbf{v}_A\| \|\mathbf{v}_B\|}$$
   
   ![Pairwise cosine similarity across layers](results/cosine_sim_all_pairs.png)
   *Figure 1: Pairwise cosine similarity across 11 layers.  Gemini ↔ Claude (green dashed) is consistently most similar, while Human ↔ Claude (red) shows the greatest separation.*
