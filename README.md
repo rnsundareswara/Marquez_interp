@@ -50,7 +50,7 @@ where $f_A(x)$ and $f_B(x)$ are the kernel density estimates of the token projec
 Figure 2 shows token projection distributions estimated with the kernel density estimate with the overlap coefficient also shown in the figure.
  ![Kernel Density estimation of the distribution of token projection at layer 9](results/proj_dist_all_pairs.png)
 ***Figure 2:** Kernel density estimates of token projection distributions onto the maximally discriminating axis at layer 9, for each translation pair. Each curve represents the distribution of projection values for content tokens from one translation. Greater separation between curves indicates more distinct representational signatures. The Gemini ↔ Claude 
-pair (bottom) shows the most overlap, consistent with the two LLM translations being geometrically most similar in GPT-2's activation space.*
+pair (right-most) shows the most overlap, consistent with the two LLM translations being geometrically most similar in GPT-2's activation space.*
 
 **Kolmogorov-Smirnov Statistic**:
 The Kolmogorov-Smirnov statistic is a non-parametric test between two distributions that gives an indication of how similar the two are.  It works by measuring the supremum of vertical difference of the cumulative Distribution Function (CDF) of the two distributions.  Figures below visualize the CDFs between the pairs and again confirm the directional trend of that the difference between Grossman's and Gemini's and Grossman's and Claude's is bigger than Gemini's and Claude's.
