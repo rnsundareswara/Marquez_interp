@@ -9,7 +9,7 @@ Linked below, first is the original Spanish passage, followed by Grossman's Engl
 - [Gemini](passages.md#gemini-translation)
 - [Claude](passages.md#claude-translation) 
   
-I chose this passage originally not because it represented a tricky translation for a human expert or for an LLM but because it was a beautiful piece of prose characterised by sensuous description of market life in a turn-of-the-century town in Latin America.  It has a surprise ending describing the ephemeral nature of human passions and it also is one of the most crucial turning points in the book.  
+I chose this passage originally not because it represented a tricky translation for a human expert or for an LLM but because it was a beautiful piece of prose characterised by sensorial description of market life in a turn-of-the-century town in Latin America.  It has a surprise ending describing the ephemeral nature of human passions and it also is one of the most crucial turning points in the book.  
 
 
 ## A Note on Scope
