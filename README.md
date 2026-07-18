@@ -182,7 +182,7 @@ Higher perplexity indicates the model is more surprised by the word choices.
 | Gemini          | 44.4          | 3.79     |
 | Claude          | 45.3          | 3.81     |
 
-The whole text perplexity indicates how much the model is "surprised" by the entire passage.  Here, surprisingly, we see that GPT-2 is less surprised by Grossman's translation than Gemini's or Claude's.  I thought that this was quite an interesting result and not what I first expected.  But then, one reason for this result could be that Grossman's (English) language could be quite natural (and in-distribution) given that he knows the overall style of the book in Spanish.  but Claude's and Gemini's are a bit surprising - perhaps a bit out of context as the LLM translated it without knowing the overall style / context of the book ...?  It's something I am still thinking about.
+The whole text perplexity indicates how much the model is "surprised" by the entire passage.  Here, surprisingly, we see that GPT-2 is less surprised by Grossman's translation than Gemini's or Claude's.  I thought that this was quite an interesting result and not what I first expected.  But then, one reason for this result could be that Grossman's (English) language could be quite natural (and in-distribution) given that she knows the overall style of the book in Spanish.  but Claude's and Gemini's are a bit surprising - perhaps a bit out of context as the LLM translated it without knowing the overall style / context of the book ...?  It's something I am still thinking about.
 
 
 ## What This Pilot Shows
