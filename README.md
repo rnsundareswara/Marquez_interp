@@ -32,7 +32,7 @@ $$\text{cos}(\mathbf{v}_A, \mathbf{v}_B) = \frac{\mathbf{v}_A \cdot \mathbf{v}_B
   ![Pairwise cosine similarity across layers](results/cosine_sim_all_pairs.png)
   *Figure 1: Pairwise cosine similarity across GPT-2 (small) layers.  Gemini ↔ Claude (green dashed) is consistently most similar, while Human ↔ Claude (red) shows the greatest separation.*
 
-  Figure 1 shows that overall all three translations when compared to each other have very similar activations across mostly all layers (cosine similarity > 0.99).  However, there is a consistent difference across all layers which stands out.  Claude and Gemini are more similar to each other than Claude is to Grossman or Gemini is to Grossman.  The largest difference happening in layer 9.  Further analysis (parts 3 and 4) breaks down which words in layer 9 had the highest activation and were distinctively human (or Claude or Gemini).  The next couple of analyses breaks this down further to understand what is responsible for the difference.
+  Figure 1 shows that overall all three translations when compared to each other have very similar activations across mostly all layers (cosine similarity > 0.99).  However, there is a consistent difference across all layers which stands out.  Claude and Gemini are more similar to each other than Claude is to Grossman or Gemini is to Grossman.  The largest difference happening in layer 9.  Further analysis (part 3) breaks down which words in layer 9 had the highest activation and were distinctively human (or Claude or Gemini).  The next couple of analyses breaks this down further to understand what is responsible for the difference.
 
 
 **Part 2**: Discriminating axis projection at layer 9
