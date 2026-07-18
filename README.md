@@ -187,7 +187,8 @@ The whole text perplexity indicates how much the model is "surprised" by the ent
 
 ## What This Pilot Shows
 
-No individual result in this study is statistically significant. 
+GPT2-decoder showed that while all three passages' started out as lexically similar at layer 0, the Gemini-Claude become more and more similar to each other semantically, which is fascinating!  
+No individual result in this study is statistically significant.  
 However, across four independent analyses — pairwise cosine similarity 
 profiles, NLL distributions, KS statistics, and discriminating axis 
 projections at layer 9 — a consistent pattern emerges: Gemini and 
