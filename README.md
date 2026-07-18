@@ -36,6 +36,7 @@ $$\text{cos}(\mathbf{v}_A, \mathbf{v}_B) = \frac{\mathbf{v}_A \cdot \mathbf{v}_B
 
 
 **Part 2**: Discriminating axis projection at layer 9
+
 Figure 2 shows the amount of overlap in the token projections between each pair (Human <-> Claude, Human <-> Gemini, Gemini <-> Claude).  
 
 The discriminating axis was computed by:
