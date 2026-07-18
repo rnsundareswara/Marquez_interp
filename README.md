@@ -29,7 +29,7 @@ Pairwise cosine similarity of activations across all layers
 
 $$\text{cos}(\mathbf{v}_A, \mathbf{v}_B) = \frac{\mathbf{v}_A \cdot \mathbf{v}_B}{\|\mathbf{v}_A\| \|\mathbf{v}_B\|}$$
   
-  ![Pairwise cosine similarity across layers](results/cosine_sim_all_pairs.png)
+  ![Pairwise cosine similarity between (mean-pooled residual activation) vectors across layers](results/cosine_sim_all_pairs.png)
   *Figure 1: Pairwise cosine similarity across GPT-2 (small) layers.  Gemini ↔ Claude (green dashed) is consistently most similar, while Human ↔ Claude (red) shows the greatest separation.*
 
   Figure 1 shows that overall all three translations when compared to each other have very similar activations across mostly all layers (cosine similarity > 0.99) with decreasing similarity in layer 1-11 (layer 0 serves as the lexical baseline) as the accumulated representation is increased. iHowever, there is a consistent difference across all layers which stands out.  Claude and Gemini are more similar to each other than Claude is to Grossman or Gemini is to Grossman.  The largest difference happening in layer 9.  Further analysis (part 3) breaks down which words in layer 9 had the highest activation and were distinctively human (or Claude or Gemini).  The next couple of analyses breaks this down further to understand what is responsible for the difference.
@@ -43,7 +43,7 @@ The discriminating axis was computed by:
 $$\mathbf{d} = \frac{\mathbf{v}_A - \mathbf{v}_B}{\|\mathbf{v}_A - \mathbf{v}_B\|}$$
 
 The tokens were then projected onto the discriminating axis:
-$$p_i = \mathbf{h}_i^{(l)} \cdot \mathbf{d}$$
+$$p_i = \mathbf{h}_i^{(l)} \cdot \mathbf{d}$$, where $h_i^(l)$ is the layer-l residual-stream activation for content token i from either translation in the pair — both sets are projected onto the same axis d.
 
 
 **Overlap Analysis**:
