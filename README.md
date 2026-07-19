@@ -88,17 +88,17 @@ projection values. Here $n = 15$.
 ### Human vs Gemini
 
 | Distinctively Human | Proj | Distinctively Gemini | Proj |
-|---------------------|------|----------------------|------|
-| head | 24.98 | de | −28.91 |
-| those | 24.81 | de | −27.19 |
-| turned | 20.43 | angel | −26.73 |
-| eyes | 20.36 | la | −25.10 |
-| sudden | 19.48 | six | −21.73 |
-| spot | 18.76 | funeral | −21.34 |
-| smiled | 18.74 | messages | −20.79 |
-| cloth | 17.84 | climate | −20.73 |
-| round | 17.40 | sad | −20.44 |
-| pointing | 16.88 | tumultuous | −19.77 |
+| --- | --- | --- | --- |
+| head | 25.85 | de | -28.05 |
+| those | 25.67 | de | -26.33 |
+| those | 21.76 | angel | -25.87 |
+| head | 21.38 | la | -24.24 |
+| turned | 21.29 | six | -20.87 |
+| eyes | 21.22 | funeral | -20.48 |
+| sudden | 20.34 | messages | -19.93 |
+| spot | 19.62 | climate | -19.86 |
+| smiled | 19.61 | b | -19.73 |
+| cloth | 18.70 | sad | -19.58 |
 
 ---
 
@@ -110,17 +110,17 @@ the discriminating axis between Grossman and Gemini at layer 9:
 ### Human vs Claude
 
 | Distinctively Human | Proj | Distinctively Claude | Proj |
-|---------------------|------|----------------------|------|
-| irresistible | 41.44 | mor | −2.42 |
-| sudden | 40.15 | under | −1.75 |
-| those | 39.06 | coc | −0.55 |
-| head | 36.20 | messages | −0.22 |
-| pointing | 35.93 | fire | 1.19 |
-| cloth | 35.59 | invisible | 2.57 |
-| turned | 35.55 | funeral | 2.97 |
-| woman | 35.21 | Mic | 1.71 |
-| shouting | 34.68 | al | 1.98 |
-| complete | 33.96 | dis | 2.07 |
+| --- | --- | --- | --- |
+| irresistible | 23.97 | mor | -19.88 |
+| sudden | 22.68 | under | -19.21 |
+| those | 21.59 | coc | -18.01 |
+| head | 18.73 | messages | -17.69 |
+| pointing | 18.46 | p | -17.40 |
+| cloth | 18.13 | cle | -16.95 |
+| turned | 18.08 | gl | -16.82 |
+| woman | 17.75 | s | -16.69 |
+| those | 17.39 | fire | -16.28 |
+| took | 17.33 | Mic | -15.76 |
 
 ---
 
@@ -133,17 +133,17 @@ the discriminating axis between Grossman and Claude at layer 9:
 ### Gemini vs Claude
 
 | Distinctively Gemini | Proj | Distinctively Claude | Proj |
-|----------------------|------|----------------------|------|
-| de | 51.46 | gl | −1.61 |
-| six | 47.03 | time | 1.10 |
-| de | 46.84 | pet | 4.17 |
-| six | 46.08 | eyes | 5.44 |
-| completely | 38.77 | under | 5.52 |
-| crazy | 38.53 | hand | 5.82 |
-| announcing | 38.22 | heart | 5.88 |
-| crying | 38.13 | wandering | 7.25 |
-| la | 37.59 | head | 7.56 |
-| six | 36.94 | capt | 6.97 |
+| --- | --- | --- | --- |
+| de | 29.30 | gl | -23.77 |
+| six | 24.87 | time | -21.06 |
+| de | 24.68 | pet | -18.00 |
+| six | 23.91 | cle | -16.89 |
+| six | 22.76 | sav | -16.81 |
+| six | 21.51 | eyes | -16.73 |
+| six | 20.26 | under | -16.64 |
+| six | 17.46 | hand | -16.35 |
+| completely | 16.60 | sav | -16.34 |
+| crazy | 16.36 | heart | -16.29 |
 
 ---
 And for completeness, Gemini's translation with words colored by their projection onto 
@@ -203,7 +203,7 @@ multiple source texts and with a more complex model than GPT-2 which maybe too b
 Dependencies: `pip install transformer-lens torch pandas 
                matplotlib numpy scikit-learn scipy`
 
-Run: `python lc_v3.py`
+Run: `python lc_v4.py`
 
 Passages are in `prose.json`. Figures are saved to `results/`.
 
