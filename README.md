@@ -196,7 +196,7 @@ projections at layer 9 — a consistent pattern emerges: Gemini and
 Claude translations are more similar to each other than either is to 
 Grossman's. This consistency across methods is the central finding of 
 this pilot, and motivates a larger study across multiple passages and 
-multiple source texts.
+multiple source texts and with a more complex model than GPT-2 which maybe too blunt for stylistic differences.  Regardless, it is still fascinating that given two completely different motives:  Grossman's motive for translation was to make sure the English reader got an accurate "immersion" of Marquez's market scene, while an LLM's motive was to accurately predict the next word, that they arrived at very similar answers.  Their differences of course are stylistic and these are found in the higher layers.  I look forward to continuing this analysis on a more complex model with more passages to really dig into tease apart the stylistic differences.
 
 ## Reproducing this analysis
 
