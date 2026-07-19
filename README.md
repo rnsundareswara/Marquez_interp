@@ -64,7 +64,7 @@ The Kolmogorov-Smirnov statistic is a non-parametric test between two distributi
   <img src="results/cdf_gemini_claude.png" width="32%" />
 </p>
 
-  *Figure 3: Visualization the difference at the supremum of the pairs of CDFs (for the Kolmogorov-Smironov test).  Gemini ↔ Claude (green dashed) is consistently most similar, while Human ↔ Claude (red) shows the greatest separation.*
+  *Figure 3: Visualization of the difference at the supremum of the pairs of CDFs (for the Kolmogorov-Smironov test).  Gemini ↔ Claude (green dashed) is consistently most similar, while Human ↔ Claude (red) shows the greatest separation.*
 
 
 | Pair            | KS stat | overlap |
