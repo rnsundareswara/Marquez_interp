@@ -92,6 +92,48 @@ def content_mask(tokens):
     ])
 
 
+# ─────────────────────────────────────────────────────────────
+# Discriminating-axis helper
+# ─────────────────────────────────────────────────────────────
+def discriminating_axis(label_a, label_b, layer=9):
+    """Unit vector along (mean_A - mean_B) in the layer-`layer` residual stream."""
+    act1 = get_activations(label_a)["resid_post", layer][0].detach().numpy()
+    act2 = get_activations(label_b)["resid_post", layer][0].detach().numpy()
+    mean_diff = act1.mean(0) - act2.mean(0)
+    axis = mean_diff / (np.linalg.norm(mean_diff) + 1e-8)
+    return act1, act2, axis
+
+
+def get_projections(label_a, label_b, layer=9, center=True, return_tokens=False):
+    """Projections of both translations' content tokens onto the discriminating axis.
+
+    If center=True, both sets are shifted so that the midpoint between the two
+    centroids sits at 0.  Centering is a pure translation: KS, overlap coefficient
+    and Cohen's d are unchanged, but sign now means "which side of the midpoint",
+    which makes the crossover logic (proj < 0 / proj > 0) literally correct.
+    """
+    act1, act2, axis = discriminating_axis(label_a, label_b, layer)
+
+    tokens_a_raw = list(get_tokens(label_a))
+    tokens_b_raw = list(get_tokens(label_b))
+    mask_a = content_mask(tokens_a_raw)
+    mask_b = content_mask(tokens_b_raw)
+
+    proj1 = (act1 @ axis)[mask_a]
+    proj2 = (act2 @ axis)[mask_b]
+
+    if center:
+        threshold = (proj1.mean() + proj2.mean()) / 2
+        proj1 = proj1 - threshold
+        proj2 = proj2 - threshold
+
+    if return_tokens:
+        tokens_a = [t for t, m in zip(tokens_a_raw, mask_a) if m]
+        tokens_b = [t for t, m in zip(tokens_b_raw, mask_b) if m]
+        return proj1, proj2, tokens_a, tokens_b
+
+    return proj1, proj2
+
 
 # ─────────────────────────────────────────────────────────────
 # Analysis functions
@@ -335,24 +377,11 @@ def prose_divergence(act_a, act_b, label_a, label_b, n_layers=12):
 
 
 
-def discriminating_axis_projection(act_a, act_b, label_a, label_b, layer):
-    act1 = act_a["resid_post", layer][0].detach().numpy()
-    act2 = act_b["resid_post", layer][0].detach().numpy()
-    mean_diff = act1.mean(0) - act2.mean(0)
-    axis = mean_diff / (np.linalg.norm(mean_diff) + 1e-8)
-    proj1, proj2 = act1 @ axis, act2 @ axis
+def discriminating_axis_projection(label_a, label_b, layer=9):
+    """Strip plot of content tokens along the (centered) discriminating axis."""
+    proj1, proj2, tokens_a, tokens_b = get_projections(
+        label_a, label_b, layer, return_tokens=True)
 
-    tokens_a_raw = list(get_tokens(label_a))
-    tokens_b_raw = list(get_tokens(label_b))
-
-    mask_a = content_mask(tokens_a_raw)  
-    mask_b = content_mask(tokens_b_raw)
-
-    proj1    = proj1[mask_a]
-    proj2    = proj2[mask_b]
-    tokens_a = [t for t, m in zip(tokens_a_raw, mask_a) if m]
-    tokens_b = [t for t, m in zip(tokens_b_raw, mask_b) if m]
-    
     fig, ax = plt.subplots(figsize=(10, 3))
     ax.scatter(proj1, np.zeros_like(proj1) + 0.1, alpha=0.7,
                color='steelblue', label=label_a, s=60)
@@ -364,8 +393,9 @@ def discriminating_axis_projection(act_a, act_b, label_a, label_b, layer):
         ax.annotate(tok, (x, -0.1), fontsize=6, ha='center', va='top', color='tomato')
 
     ax.axhline(0, color='gray', linewidth=0.5, linestyle='--', alpha=0.5)
+    ax.axvline(0, color='gray', linewidth=1.0, linestyle='--', alpha=0.6)
     ax.set_yticks([])
-    ax.set_xlabel(f"← {label_b} side  |  {label_a} side →")
+    ax.set_xlabel(f"← {label_b} side  |  0 = midpoint |  {label_a} side →")
     ax.set_title(f"Layer {layer}: tokens on maximally discriminating axis "
                  f"({label_a} vs {label_b})")
     ax.legend()
@@ -463,34 +493,21 @@ def colored_passage_html(act_a, act_b, label_a, label_b, layer, prose_label):
 
 
 
-def characterize_discriminating_tokens(act_a, act_b,
-                                        label_a, label_b,
-                                        layer, top_n=15):
-    act1 = act_a["resid_post", layer][0].detach().numpy()
-    act2 = act_b["resid_post", layer][0].detach().numpy()
-    mean_diff = act1.mean(0) - act2.mean(0)
-    axis = mean_diff / (np.linalg.norm(mean_diff) + 1e-8)
-    proj1, proj2 = act1 @ axis, act2 @ axis
+def characterize_discriminating_tokens(label_a, label_b, layer=9, top_n=15):
+    """Most distinctive tokens per translation, and crossover tokens.
 
-    tokens_a_raw = list(get_tokens(label_a))
-    tokens_b_raw = list(get_tokens(label_b))
-
-    mask_a = content_mask(tokens_a_raw)      # ← same utility
-    mask_b = content_mask(tokens_b_raw)
-
-    proj1 = proj1[mask_a]
-    proj2 = proj2[mask_b]
-    tokens_a = [t for t, m in zip(tokens_a_raw, mask_a) if m]
-    tokens_b = [t for t, m in zip(tokens_b_raw, mask_b) if m]
-    
-
+    Projections are centered so 0 is the midpoint between the two centroids —
+    so `projection < 0` genuinely means "on B's side" and vice versa.
+    """
+    proj1, proj2, tokens_a, tokens_b = get_projections(
+        label_a, label_b, layer, return_tokens=True)
 
     df_a = pd.DataFrame({"token": tokens_a, "projection": proj1,
                          "source": label_a})
     df_b = pd.DataFrame({"token": tokens_b, "projection": proj2,
                          "source": label_b})
 
-    # Crossover tokens — on the "wrong" side
+    # Crossover tokens — on the "wrong" side of the midpoint (now literally 0)
     crossover_a = df_a[df_a["projection"] < 0].sort_values("projection")
     crossover_b = df_b[df_b["projection"] > 0].sort_values("projection",
                                                              ascending=False)
@@ -510,33 +527,16 @@ def characterize_discriminating_tokens(act_a, act_b,
           .head(top_n)[["token","projection"]].to_string(index=False))
 
 
-def discriminating_axis_overlap(act_a, act_b, label_a, label_b, layer):
-    act1 = act_a["resid_post", layer][0].detach().numpy()
-    act2 = act_b["resid_post", layer][0].detach().numpy()
-    mean_diff = act1.mean(0) - act2.mean(0)
-    axis = mean_diff / (np.linalg.norm(mean_diff) + 1e-8)
+def discriminating_axis_overlap(label_a, label_b, layer=9):
+    """Crossover fractions and centroid separation (projections centered at 0)."""
+    proj1, proj2 = get_projections(label_a, label_b, layer)
 
-    proj1 = act1 @ axis
-    proj2 = act2 @ axis
+    # Fraction of each translation's tokens on the wrong side of the midpoint
+    crossover_a = (proj1 < 0).sum() / len(proj1)
+    crossover_b = (proj2 > 0).sum() / len(proj2)
 
-    tokens_a_raw = list(get_tokens(label_a))
-    tokens_b_raw = list(get_tokens(label_b))
-    mask_a = content_mask(tokens_a_raw)
-    mask_b = content_mask(tokens_b_raw)
-
-    proj1 = proj1[mask_a]
-    proj2 = proj2[mask_b]
-
-
-    threshold = (proj1.mean() + proj2.mean()) / 2  # midpoint between centroids
-
-    # Fraction of each translation's tokens on the wrong side
-    crossover_a = (proj1 < threshold).sum() / len(proj1)
-    crossover_b = (proj2 > threshold).sum() / len(proj2)
-
-    # Mean projection of each — how far apart are the centroids?
+    # How far apart are the centroids?
     separation = proj1.mean() - proj2.mean()
-
 
     print(f"\n{label_a} ↔ {label_b} at layer {layer}:")
     print(f"  {label_a} tokens on {label_b} side: {crossover_a:.1%}")
@@ -546,23 +546,8 @@ def discriminating_axis_overlap(act_a, act_b, label_a, label_b, layer):
     return crossover_a, crossover_b, separation
 
 
-def discriminating_axis_ks(act_a, act_b, label_a, label_b, layer):
-    act1 = act_a["resid_post", layer][0].detach().numpy()
-    act2 = act_b["resid_post", layer][0].detach().numpy()
-    mean_diff = act1.mean(0) - act2.mean(0)
-    axis = mean_diff / (np.linalg.norm(mean_diff) + 1e-8)
-
-    proj1 = act1 @ axis
-    proj2 = act2 @ axis
-
-    tokens_a_raw = list(get_tokens(label_a))
-    tokens_b_raw = list(get_tokens(label_b))
-    mask_a = content_mask(tokens_a_raw)
-    mask_b = content_mask(tokens_b_raw)
-
-    proj1 = proj1[mask_a]
-    proj2 = proj2[mask_b]
-
+def discriminating_axis_ks(label_a, label_b, layer=9):
+    proj1, proj2 = get_projections(label_a, label_b, layer)
     ks, pv = ks_2samp(proj1, proj2)
     return ks, pv
 
@@ -596,26 +581,20 @@ def overlap_coefficient(proj1, proj2, n_points=1000):
 
 def plot_all_projection_distributions(layer=9, compute_overlap=True):
 
-    fig, axes = plt.subplots(1, 3, figsize=(15, 4), sharey=False)
+    fig, axes = plt.subplots(1, 3, figsize=(15, 4), sharex=True, sharey=False)
     colors_a = ['steelblue', 'steelblue', 'tomato']
     colors_b = ['tomato',    'green',     'green' ]
 
     for ax, (label_a, label_b), ca, cb in zip(
             axes, PAIR_NAMES, colors_a, colors_b):
 
-        act1 = get_activations(label_a)["resid_post", layer][0].detach().numpy()
-        act2 = get_activations(label_b)["resid_post", layer][0].detach().numpy()
-        mean_diff = act1.mean(0) - act2.mean(0)
-        axis = mean_diff / (np.linalg.norm(mean_diff) + 1e-8)
-
-        proj1 = (act1 @ axis)[content_mask(list(get_tokens(label_a)))]
-        proj2 = (act2 @ axis)[content_mask(list(get_tokens(label_b)))]
+        proj1, proj2 = get_projections(label_a, label_b, layer)
 
         x = np.linspace(
             min(proj1.min(), proj2.min()) - 2,
             max(proj1.max(), proj2.max()) + 2, 300
         )
-        
+
         kde1 = gaussian_kde(proj1)
         kde2 = gaussian_kde(proj2)
 
@@ -628,24 +607,25 @@ def plot_all_projection_distributions(layer=9, compute_overlap=True):
         ax.plot(x, kde1, color=ca, linewidth=1.5)
         ax.plot(x, kde2, color=cb, linewidth=1.5)
 
-        threshold = (proj1.mean() + proj2.mean()) / 2
-        ax.axvline(threshold, color='gray', linestyle='--', linewidth=1)
+        # midpoint between centroids is now exactly 0
+        ax.axvline(0, color='gray', linestyle='--', linewidth=1)
 
         if compute_overlap:
             ovl = overlap_coefficient(proj1, proj2)
-            
+
             ax.text(0.97, 0.95, f"overlap = {ovl:.3f}",
                 transform=ax.transAxes, ha='right', va='top', fontsize=8,
                 bbox=dict(boxstyle='round', facecolor='white',
                           edgecolor='gray', alpha=0.8))
 
         ax.set_title(f"{label_a} vs {label_b}")
-        ax.set_xlabel("Projection onto discriminating axis")
+        ax.set_xlabel("Centered projection onto discriminating axis")
         ax.legend(fontsize=8)
         ax.spines['top'].set_visible(False)
         ax.spines['right'].set_visible(False)
 
-    plt.suptitle("Token projection distributions at Layer 9",
+    plt.suptitle("Token projection distributions at Layer 9 "
+                 "(0 = midpoint between centroids)",
                  fontsize=11, y=1.02)
     plt.tight_layout()
     plt.savefig("results/proj_dist_all_pairs.png", dpi=150,
@@ -657,14 +637,9 @@ def plot_all_projection_distributions(layer=9, compute_overlap=True):
 
 
 #visualization of KS statistic on the CDFs of the projections onto the discriminating axis
-def plot_cdf_comparison(label_a, label_b):
+def plot_cdf_comparison(label_a, label_b, layer=9):
     fig, ax = plt.subplots(figsize=(8, 5))
-    act1 = get_activations(label_a)["resid_post", 9][0].detach().numpy()
-    act2 = get_activations(label_b)["resid_post", 9][0].detach().numpy()
-    mean_diff = act1.mean(0) - act2.mean(0)
-    axis = mean_diff / (np.linalg.norm(mean_diff) + 1e-8)
-    proj1 = (act1 @ axis)[content_mask(list(get_tokens(label_a)))]
-    proj2 = (act2 @ axis)[content_mask(list(get_tokens(label_b)))]
+    proj1, proj2 = get_projections(label_a, label_b, layer)
 
     for proj, label, color in [(proj1, label_a, 'steelblue'),
                                 (proj2, label_b, 'tomato')]:
@@ -684,6 +659,7 @@ def plot_cdf_comparison(label_a, label_b):
     print(f"\nKS statistic (scipy): {ks_stat:.3f}, p-value: {ks_pv:.3e}")
     print(f"Max CDF distance: {diffs[max_idx]:.3f} at x = {all_x[max_idx]:.3f}")
 
+    ax.axvline(0, color='gray', linestyle='--', linewidth=1, alpha=0.6)
     ax.annotate('',
                 xy=(all_x[max_idx], cdf2[max_idx]),
                 xytext=(all_x[max_idx], cdf1[max_idx]),
@@ -692,26 +668,21 @@ def plot_cdf_comparison(label_a, label_b):
             (cdf1[max_idx] + cdf2[max_idx]) / 2,
             f'D = {diffs[max_idx]:.3f}', fontsize=8)
 
-    ax.set_xlabel("Projection onto discriminating axis")
+    ax.set_xlabel("Centered projection onto discriminating axis")
     ax.set_ylabel("Cumulative probability")
-    ax.set_title(f"Empirical CDF comparison — {label_a} vs {label_b} (Layer 9)")  # ← added
+    ax.set_title(f"Empirical CDF comparison — {label_a} vs {label_b} (Layer {layer})")
     ax.legend(fontsize=8)
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
-    plt.tight_layout()                                                              # ← added
-    plt.savefig(f"results/cdf_{label_a.lower()}_{label_b.lower()}.png", dpi=150)  # ← added
-    plt.show()                    
+    plt.tight_layout()
+    plt.savefig(f"results/cdf_{label_a.lower()}_{label_b.lower()}.png", dpi=150)
+    plt.show()
 
 
 def plot_projection_histogram(label_a, label_b, layer=9, bins=30):
     fig, ax = plt.subplots(figsize=(9, 4))
 
-    act1 = get_activations(label_a)["resid_post", layer][0].detach().numpy()
-    act2 = get_activations(label_b)["resid_post", layer][0].detach().numpy()
-    mean_diff = act1.mean(0) - act2.mean(0)
-    axis = mean_diff / (np.linalg.norm(mean_diff) + 1e-8)
-    proj1 = (act1 @ axis)[content_mask(list(get_tokens(label_a)))]
-    proj2 = (act2 @ axis)[content_mask(list(get_tokens(label_b)))]
+    proj1, proj2 = get_projections(label_a, label_b, layer)
 
     ax.hist(proj1, bins=bins, alpha=0.5, color='steelblue',
             label=label_a, density=True)
@@ -728,8 +699,9 @@ def plot_projection_histogram(label_a, label_b, layer=9, bins=30):
     ax.plot(x, norm.pdf(x, proj2.mean(), proj2.std()),
             color='tomato', linewidth=2, linestyle='--',
             label=f'{label_b} fitted Gaussian')
+    ax.axvline(0, color='gray', linestyle='--', linewidth=1, alpha=0.6)
 
-    ax.set_xlabel("Projection onto discriminating axis")
+    ax.set_xlabel("Centered projection onto discriminating axis")
     ax.set_ylabel("Density")
     ax.set_title(f"Token projection distributions — {label_a} vs {label_b} "
                  f"(Layer {layer})")
@@ -758,6 +730,19 @@ gemini_tokens = bridge.to_str_tokens(gemini_prose)
 claude_tokens = bridge.to_str_tokens(claude_prose)
 
 
+#Analysis, part 1: cosine similarity of mean-pooled activations at each layer
+# ── Cosine similarity profiles ─────────────────────────────
+all_sims = {}
+for label_a, label_b in PAIR_NAMES:
+    key          = f"{label_a} ↔ {label_b}"
+    all_sims[key] = cosine_sim_profile(
+        get_activations(label_a), get_activations(label_b),
+        label_a, label_b
+    )
+plot_cosine_sim_all_pairs(all_sims)
+
+
+#Analysis, part 3:
 # --- NLL dataframes ---
 df_human  = per_token_nll_ppl(bridge, human_prose)
 df_gemini = per_token_nll_ppl(bridge, gemini_prose)
@@ -768,13 +753,13 @@ for label, df in [("Human", df_human), ("Gemini", df_gemini), ("Claude", df_clau
     summarize_nll(df, label)
 
 
-
 # ── Most surprising tokens ─────────────────────────────────
 for label, df in [("Human", df_human), ("Gemini", df_gemini), ("Claude", df_claude)]:
     print(f"\nMost surprising tokens — {label}:")
     print(df.sort_values("nll", ascending=False).head(10).to_string(index=False))
 
-# ── KS test — all three pairs ──────────────────────────────
+# ── KS test on NLL distributions — all three pairs ─────────
+# (moved below the NLL dataframes, which it depends on)
 print(f"\n{'Pair':<22} {'KS stat':>8}  {'p-value':>8}  {'mean NLL diff':>14}")
 print("─" * 58)
 for label_a, label_b in PAIR_NAMES:
@@ -783,6 +768,7 @@ for label_a, label_b in PAIR_NAMES:
     diff    = abs(a.mean() - b.mean())
     pair    = f"{label_a} ↔ {label_b}"
     print(f"{pair:<22} {ks:>8.4f}  {pv:>8.4f}  {diff:>14.4f}")
+
 
 '''
 # ── Surprise concentration ─────────────────────────────────
@@ -800,29 +786,16 @@ for label_a, label_b in PAIR_NAMES:
     plot_surprise_concentration_pair(df_a, df_b, label_a, label_b)
 '''
 
-# ── Cosine similarity profiles ─────────────────────────────
-all_sims = {}
-for label_a, label_b in PAIR_NAMES:
-    key          = f"{label_a} ↔ {label_b}"
-    all_sims[key] = cosine_sim_profile(
-        get_activations(label_a), get_activations(label_b),
-        label_a, label_b
-    )
-plot_cosine_sim_all_pairs(all_sims)
+
 
 
 # Layer 9 is where most of the difference lies for passage[0]
 for label_a, label_b in PAIR_NAMES:
-    discriminating_axis_projection(
-        get_activations(label_a), get_activations(label_b),
-        label_a, label_b, layer=9
-    )
+    discriminating_axis_projection(label_a, label_b, layer=9)
 
 
 for label_a, label_b in PAIR_NAMES:
-    characterize_discriminating_tokens(get_activations(label_a), get_activations(label_b),
-        label_a, label_b, layer=9, top_n=15
-        )
+    characterize_discriminating_tokens(label_a, label_b, layer=9, top_n=15)
 
 
 print(f"\n{'Pair':<22} {'A→B crossover':>14} {'B→A crossover':>14} "
@@ -831,16 +804,11 @@ print("─" * 85)
 
 cohend = []
 for label_a, label_b in PAIR_NAMES:
-    act1 = get_activations(label_a)["resid_post", 9][0].detach().numpy()
-    act2 = get_activations(label_b)["resid_post", 9][0].detach().numpy()
-    mean_diff = act1.mean(0) - act2.mean(0)
-    axis = mean_diff / (np.linalg.norm(mean_diff) + 1e-8)
-    proj1 = (act1 @ axis)[content_mask(list(get_tokens(label_a)))]
-    proj2 = (act2 @ axis)[content_mask(list(get_tokens(label_b)))]
+    proj1, proj2 = get_projections(label_a, label_b, layer=9)
 
-    threshold = (proj1.mean() + proj2.mean()) / 2 
-    co_a = (proj1 < threshold).sum() / len(proj1)
-    co_b = (proj2 > threshold).sum() / len(proj2)
+    # projections are centered, so the midpoint is exactly 0
+    co_a = (proj1 < 0).sum() / len(proj1)
+    co_b = (proj2 > 0).sum() / len(proj2)
     sep  = proj1.mean() - proj2.mean()
 
     ks, pv = ks_2samp(proj1, proj2)
@@ -889,23 +857,6 @@ colored_passage_html(gemini_act, claude_act, "Gemini", "Claude", 9, "Gemini")
 #for KS test visualization, plot the empirical CDFs of the projections onto the discriminating axis at layer 9 for each pair
 for label_a, label_b in PAIR_NAMES:
     plot_cdf_comparison(label_a, label_b)
-    
-
-#checking for normality of projections of layer 9 onto discriminating axis for each pair using D'Agostino-Pearson
-
-for label_a, label_b in PAIR_NAMES:
-    act1 = get_activations(label_a)["resid_post", 9][0].detach().numpy()
-    act2 = get_activations(label_b)["resid_post", 9][0].detach().numpy()
-    mean_diff = act1.mean(0) - act2.mean(0)
-    axis = mean_diff / (np.linalg.norm(mean_diff) + 1e-8)
-    proj1 = (act1 @ axis)[content_mask(list(get_tokens(label_a)))]
-    proj2 = (act2 @ axis)[content_mask(list(get_tokens(label_b)))]
-
-    print(f"\n{label_a} ↔ {label_b}")
-    for proj, label in [(proj1, label_a), (proj2, label_b)]:
-        stat, p = normaltest(proj)   # D'Agostino-Pearson test
-        print(f"  {label}: stat={stat:.3f}, p={p:.4f} "
-              f"{'→ Gaussian' if p > 0.05 else '→ not Gaussian'}")
 
 
 for label_a, label_b in PAIR_NAMES:
@@ -913,32 +864,25 @@ for label_a, label_b in PAIR_NAMES:
 
 
 #checks for normality of the projections onto the discriminating axis at layer 9 for each pair using D'Agostino-Pearson test
+#(centering does not affect the test statistic — it is a pure shift)
 for label_a, label_b in PAIR_NAMES:
-    act1 = get_activations(label_a)["resid_post", 9][0].detach().numpy()
-    act2 = get_activations(label_b)["resid_post", 9][0].detach().numpy()
-    mean_diff = act1.mean(0) - act2.mean(0)
-    axis = mean_diff / (np.linalg.norm(mean_diff) + 1e-8)
-    proj1 = (act1 @ axis)[content_mask(list(get_tokens(label_a)))]
-    proj2 = (act2 @ axis)[content_mask(list(get_tokens(label_b)))]
+    proj1, proj2 = get_projections(label_a, label_b, layer=9)
 
     print(f"\n{label_a} ↔ {label_b}")
     for proj, label in [(proj1, label_a), (proj2, label_b)]:
         stat, p = normaltest(proj)   # D'Agostino-Pearson test
         print(f"  {label}: stat={stat:.3f}, p={p:.4f} "
               f"{'→ Gaussian' if p > 0.05 else '→ not Gaussian'}")
-        
 
 
-        
+
 
 # ── Activation-space analyses (commenting out for now) ──
 '''
 for label_a, label_b in PAIR_NAMES:
     act_a, act_b = get_activations(label_a), get_activations(label_b)
     prose_divergence(act_a, act_b, label_a, label_b)
-    discriminating_axis_projection(act_a, act_b, label_a, label_b, layer=3)
+    discriminating_axis_projection(label_a, label_b, layer=3)
     for layer in [0, 4, 8, 11]:
         pca_at_layer(act_a, act_b, label_a, label_b, layer)
 '''
-
-
