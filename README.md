@@ -43,7 +43,7 @@ The discriminating axis was computed by:
 $$\mathbf{d} = \frac{\mathbf{v}_A - \mathbf{v}_B}{\|\mathbf{v}_A - \mathbf{v}_B\|}$$
 
 The tokens were then projected onto the discriminating axis:
-$$p_i = \mathbf{h}_i^{(l)} \cdot \mathbf{d}$$, where $h_i^(l)$ is the layer-l residual-stream activation for content token i from either translation in the pair — both sets are projected onto the same axis d.
+$$p_i = \mathbf{h}_i^{(l)} \cdot \mathbf{d}$$, where $h_i^{(l)}$ is the layer-l residual-stream activation for content token i from either translation in the pair — both sets are projected onto the same axis d.
 
 
 **Overlap Analysis**:
